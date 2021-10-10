@@ -81,7 +81,7 @@ def parse_flags(argv: list[str]):
             try:
                 flag.value = float(value)
             except Exception as e:
-                raise TypeError(f'Type mismatch: {arg} flag expects an float.') from e
+                raise TypeError(f'Type mismatch: {arg} flag expects a float.') from e
         else:
             flag.value = value
     for flag in flags:
