@@ -1,6 +1,6 @@
 # Python Argv Parser
 
-A tool that provedas an API to handle command line arguments easier. It is vaguely based on [Go flag package](https://pkg.go.dev/flag)
+A tool that provides an API to handle command line arguments easier. It is vaguely based on [Go flag package](https://pkg.go.dev/flag)
 
 ```python
 import argv_parser
