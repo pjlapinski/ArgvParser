@@ -35,8 +35,8 @@ def str_flag(name: str, default: str, description: str, required: bool = False) 
     return __new_flag(name, default, description, FlagType.STR, required)
 
 
-def bool_flag(name: str, default: bool, description: str, required: bool = False) -> Flag[bool]:
-    return __new_flag(name, default, description, FlagType.BOOL, required)
+def bool_flag(name: str, description: str) -> Flag[bool]:
+    return __new_flag(name, False, description, FlagType.BOOL, False)
 
 
 def float_flag(name: str, default: float, description: str, required: bool = False) -> Flag[float]:
@@ -62,8 +62,7 @@ def parse_flags(argv: list[str]):
         argc -= 1
         if arg[0] != '-':
             raise ValueError(f'Expected a flag, got {arg} instead.')
-        flag_idx = next((i for i, v in enumerate(
-            flags) if v.name == arg[1:]), -1)
+        flag_idx = next((i for i, v in enumerate(flags) if v.name == arg[1:]), -1)
         if flag_idx == -1:
             raise ValueError(f'Unknown flag: {arg}.')
         flag = flags.pop(flag_idx)
@@ -77,14 +76,12 @@ def parse_flags(argv: list[str]):
             try:
                 flag.value = int(value)
             except Exception as e:
-                raise TypeError(
-                    f'Type mismatch: {arg} flag expects an int.') from e
+                raise TypeError(f'Type mismatch: {arg} flag expects an int.') from e
         if flag.typ == FlagType.FLOAT:
             try:
                 flag.value = float(value)
             except Exception as e:
-                raise TypeError(
-                    f'Type mismatch: {arg} flag expects an float.') from e
+                raise TypeError(f'Type mismatch: {arg} flag expects an float.') from e
         else:
             flag.value = value
     for flag in flags:
@@ -92,9 +89,14 @@ def parse_flags(argv: list[str]):
             raise ValueError(f'The -{flag.name} flag is required.')
 
 
-def print_help(program_description: str):
-    print(program_description)
+def print_help():
     for flag in FLAGS:
-        print(f'    -{flag.name}')
+        is_bool = flag.typ == FlagType.BOOL
+        print(f'    -{flag.name}' + (':' if is_bool else ' <value>:'))
         print(f'        {flag.description}')
-        print(f'        Default: {flag.default}')
+        if is_bool:
+            continue
+        if flag.typ == FlagType.STR:
+            print(f"        Default: '{flag.default}'")
+        else:
+            print(f"        Default: {flag.default}")
