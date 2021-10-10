@@ -7,9 +7,9 @@ import argv_parser
 import sys
 
 bool_flag = argv_parser.bool_flag('bool', 'A flag that tests a boolean')
-int_flag = argv_parser.int_flag('int', 0, 'A flag that tests an integer', required=True)
-float_flag = argv_parser.float_flag('float', 0.0, 'A flag that tests a floating point value')
-str_flag = argv_parser.str_flag('str', '', 'A flag that tests a string')
+int_flag = argv_parser.int_flag('int', 'A flag that tests an integer', default=1, required=True)
+float_flag = argv_parser.float_flag('float', 'A flag that tests a floating point value')
+str_flag = argv_parser.str_flag('str', 'A flag that tests a string', default='empty')
 
 if argv_parser.help_flag_present(sys.argv):
     print('Usage: program_name [Options]')

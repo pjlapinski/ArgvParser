@@ -27,11 +27,11 @@ class Flag(Generic[T]):
 FLAGS: list[Flag] = []
 
 
-def int_flag(name: str, default: int, description: str, required: bool = False) -> Flag[int]:
+def int_flag(name: str, description: str, default: int = 0,  required: bool = False) -> Flag[int]:
     return __new_flag(name, default, description, FlagType.INT, required)
 
 
-def str_flag(name: str, default: str, description: str, required: bool = False) -> Flag[str]:
+def str_flag(name: str, description: str, default: str = '', required: bool = False) -> Flag[str]:
     return __new_flag(name, default, description, FlagType.STR, required)
 
 
@@ -39,7 +39,7 @@ def bool_flag(name: str, description: str) -> Flag[bool]:
     return __new_flag(name, False, description, FlagType.BOOL, False)
 
 
-def float_flag(name: str, default: float, description: str, required: bool = False) -> Flag[float]:
+def float_flag(name: str, description: str, default: float = 0.0, required: bool = False) -> Flag[float]:
     return __new_flag(name, default, description, FlagType.FLOAT, required)
 
 
