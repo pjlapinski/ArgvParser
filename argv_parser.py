@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Union, TypeVar, Generic
+import re
 
 
 T = TypeVar('T')
@@ -12,6 +13,7 @@ class FlagType(Enum):
     FLOAT = auto()
     STR = auto()
     BOOL = auto()
+    REGEX = auto()
 
 
 @dataclass
@@ -22,17 +24,22 @@ class Flag(Generic[T]):
     name: str
     default: T
     description: str
+    regex: str
 
 
 FLAGS: list[Flag] = []
 
 
-def int_flag(name: str, description: str, default: int = 0,  required: bool = False) -> Flag[int]:
+def int_flag(name: str, description: str, default: int = 0, required: bool = False) -> Flag[int]:
     return __new_flag(name, default, description, FlagType.INT, required)
 
 
 def str_flag(name: str, description: str, default: str = '', required: bool = False) -> Flag[str]:
     return __new_flag(name, default, description, FlagType.STR, required)
+
+
+def regex_flag(name: str, description: str, regex: str = r'.+', default: str = '', required: bool = False) -> Flag[str]:
+    return __new_flag(name, default, description, FlagType.REGEX, required, regex)
 
 
 def bool_flag(name: str, description: str) -> Flag[bool]:
@@ -47,9 +54,9 @@ def help_flag_present(argv: list[str]) -> bool:
     return any([arg == '-help' for arg in argv])
 
 
-def __new_flag(name: str, default: __FlagValue, description: str, typ: FlagType, required: bool):
+def __new_flag(name: str, default: __FlagValue, description: str, typ: FlagType, required: bool, regex: str = ''):
     global FLAGS
-    flag = Flag(default, required, typ, name, default, description)
+    flag = Flag(default, required, typ, name, default, description, regex)
     FLAGS.append(flag)
     return flag
 
@@ -61,27 +68,39 @@ def parse_flags(argv: list[str]):
         arg = program_argv.pop(0)
         argc -= 1
         if arg[0] != '-':
-            raise ValueError(f'Expected a flag, got {arg} instead.')
+            # regex flags
+            for i, flag in enumerate(flags):
+                if flag.typ == FlagType.REGEX and re.match(flag.regex, arg):
+                    flags.pop(i)
+                    flag.value = arg
+                    break
+            else:
+                raise ValueError(f'Expected a flag, got {arg} instead.')
+            continue
         flag_idx = next((i for i, v in enumerate(flags) if v.name == arg[1:]), -1)
         if flag_idx == -1:
             raise ValueError(f'Unknown flag: {arg}.')
         flag = flags.pop(flag_idx)
+        # bool flags
         if flag.typ is FlagType.BOOL:
             flag.value = True
-            return
+            continue
         if argc == 0:
             raise ValueError(f'Flag mismatch: no value for the {arg} flag.')
         value = program_argv.pop(0)
+        # int flags
         if flag.typ == FlagType.INT:
             try:
                 flag.value = int(value)
             except Exception as e:
                 raise TypeError(f'Type mismatch: {arg} flag expects an int.') from e
+        # float flags
         if flag.typ == FlagType.FLOAT:
             try:
                 flag.value = float(value)
             except Exception as e:
                 raise TypeError(f'Type mismatch: {arg} flag expects a float.') from e
+        # str flags
         else:
             flag.value = value
     for flag in flags:
@@ -92,9 +111,13 @@ def parse_flags(argv: list[str]):
 def print_help():
     for flag in FLAGS:
         is_bool = flag.typ == FlagType.BOOL
-        print(f'    -{flag.name}' + (':' if is_bool else ' <value>:'))
+        is_regex = flag.typ == FlagType.REGEX
+        if is_regex:
+            print(f'     [{flag.name}]:')
+        else:
+            print(f'    -{flag.name}{(":" if is_bool else " <value>:")}')
         print(f'        {flag.description}')
-        if is_bool:
+        if is_bool or is_regex:
             continue
         if flag.typ == FlagType.STR:
             print(f"        Default: '{flag.default}'")
