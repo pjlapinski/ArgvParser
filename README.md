@@ -2,6 +2,19 @@
 
 A tool that provides an API to handle command line arguments easier. It is vaguely based on [Go flag package](https://pkg.go.dev/flag)
 
+## Note:
+The regex flag is different than the others. When defined with a name, instead of searching for '-[name]' in argv, 
+the flag will only try to find a string matching a given regex, i.e.
+
+```python
+regex_flag('name', 'description', r'.+\.py')
+```
+
+will not match on '-name'. Instead it will search argv for any string ending with '.py'. The name of a regex flag
+is used only for documentation, in case the '-help' flag is present in argv.
+
+## Example use:
+
 ```python
 import argv_parser
 import sys
