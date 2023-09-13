@@ -105,6 +105,16 @@ def help_flag_present(argv: list[str], flag_name: str = 'help') -> bool:
     return any([arg == f'-{flag_name}' for arg in argv])
 
 
+def is_flag_present(argv: list[str], flag: Flag) -> bool:
+    """
+    Checks if a flag is present in argv.
+
+    :param argv: sys.argv
+    :return: if the help flag is present
+    """
+    return any([arg == f'-{flag.name}' for arg in argv])
+
+
 def __new_flag(name: str, default: __FlagValue, description: str, typ: FlagType, required: bool, regex: str = '') -> Flag[T]:
     global FLAGS
     flag = Flag(default, required, typ, name, default, description, regex)
